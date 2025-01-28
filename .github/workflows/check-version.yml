@@ -8,22 +8,10 @@ on:
 
 jobs:
   check-version:
+    if: ${{ github.event.pull_request.base.ref == 'main' }}
     runs-on: ubuntu-latest
 
     steps:
-      - name: Get the ref
-        id: get-ref
-        uses: ankitvgupta/ref-to-tag-action@master
-        with:
-          ref: ${{ github.ref }}
-          head_ref: ${{ github.head_ref }}
-
-      - name: Exit if not main
-        if: github.ref == 'refs/heads/main'
-        run: |
-          echo "Not main, exiting"
-          exit 0
-
       - name: Checkout PR branch
         uses: actions/checkout@v4
 
