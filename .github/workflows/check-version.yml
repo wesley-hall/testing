@@ -36,6 +36,17 @@ jobs:
           PR_VERSION="${{ steps.pr_version.outputs.pr_version }}"
           MAIN_VERSION="${{ steps.main_version.outputs.main_version }}"
 
+          # Check if either version is null or empty
+          if [ -z "$PR_VERSION" ]; then
+            echo "Error: Version in PR branch is null or empty."
+            exit 1
+          fi
+
+          if [ -z "$MAIN_VERSION" ]; then
+            echo "Error: Version in main branch is null or empty."
+            exit 1
+          fi
+
           # Check if versions are the same
           if [ "$PR_VERSION" == "$MAIN_VERSION" ]; then
             echo "Version in package.json is the same as the main branch version: $MAIN_VERSION. Please update it for the new release."
