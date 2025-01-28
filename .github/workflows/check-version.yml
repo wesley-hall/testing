@@ -37,12 +37,12 @@ jobs:
           MAIN_VERSION="${{ steps.main_version.outputs.main_version }}"
 
           # Check if either version is null or empty
-          if [ -z "$PR_VERSION" ]; then
+          if [ -z "$PR_VERSION" ] || [ "$PR_VERSION" == "null" ]; then
             echo "Error: Version in PR branch is null or empty."
             exit 1
           fi
 
-          if [ -z "$MAIN_VERSION" ]; then
+          if [ -z "$MAIN_VERSION" ] || [ "$MAIN_VERSION" == "null" ]; then
             echo "Error: Version in main branch is null or empty."
             exit 1
           fi
