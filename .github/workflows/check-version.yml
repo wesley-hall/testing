@@ -40,8 +40,8 @@ jobs:
       - name: Compare versions
         run: |
           if [ "$PR_VERSION" == "$MAIN_VERSION" ]; then
-            echo "Version in package.json is the same as main branch: $PR_VERSION"
+            echo "Version in package.json is the same as main branch: $PR_VERSION. Please update it for the new release."
             exit 1
           else
-            echo "Version in package.json differs from main branch."
+            echo "Version in package.json has already been updated."
           fi
