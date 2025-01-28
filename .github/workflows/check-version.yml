@@ -20,18 +20,6 @@ jobs:
           echo "PR version: $PR_VERSION"
           echo "pr_version=$PR_VERSION" >> $GITHUB_OUTPUT
 
-      # - name: Checkout main branch
-      #   run: |
-      #     git fetch origin main
-      #     git checkout origin/main
-
-      # - name: Read version from main branch
-      #   id: main_version
-      #   run: |
-      #     MAIN_VERSION=$(jq -r '.version' package.json)
-      #     echo "Main branch version: $MAIN_VERSION"
-      #     echo "main_version=$MAIN_VERSION" >> $GITHUB_OUTPUT
-
       - name: Read version from main branch
         id: main_version
         run: |
