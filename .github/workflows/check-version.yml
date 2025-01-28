@@ -12,11 +12,11 @@ jobs:
 
     steps:
      - name: Get the Ref
-        id: get-ref
-        uses: ankitvgupta/ref-to-tag-action@master
-        with:
-          ref: ${{ github.ref }}
-          head_ref: ${{ github.head_ref }}
+       id: get-ref
+       uses: ankitvgupta/ref-to-tag-action@master
+       with:
+         ref: ${{ github.ref }}
+         head_ref: ${{ github.head_ref }}
 
       - name: Exit if not main
         if: github.ref == 'refs/heads/main'
