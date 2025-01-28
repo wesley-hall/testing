@@ -31,9 +31,14 @@ jobs:
 
       - name: Compare versions
         run: |
-          if [ "${{ steps.pr_version.outputs.pr_version }}" == "${{ steps.main_version.outputs.main_version }}" ]; then
-            echo "Version in package.json is the same as main branch: ${{ steps.pr_version.outputs.pr_version }}. Please update it for the new release."
+          PR_VERSION="${{ steps.pr_version.outputs.pr_version }}"
+          MAIN_VERSION="${{ steps.main_version.outputs.main_version }}"
+
+          # Compare versions using sort -V
+          if [ "$(printf '%s\n%s' \"$MAIN_VERSION\" \"$PR_VERSION\" | sort -V | head -n 1)" == "$PR_VERSION" ]; then
+            echo "Version in package.json is not greater than the main branch version: $MAIN_VERSION."
+            echo "Please increment the version for the new release."
             exit 1
           else
-            echo "Version in package.json differs from main branch."
+            echo "Version in package.json ($PR_VERSION) is greater than main branch version ($MAIN_VERSION)."
           fi
