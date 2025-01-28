@@ -10,20 +10,41 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Compare package.json versions
+      - name: Checkout PR branch
+        uses: actions/checkout@v4
+
+      - name: Read version from PR branch
+        id: pr_version
         run: |
-          # Fetch and read the version from the PR branch
           PR_VERSION=$(jq -r '.version' package.json)
           echo "PR version: $PR_VERSION"
+          echo "pr_version=$PR_VERSION" >> $GITHUB_OUTPUT
 
-          # Fetch and read the version from the main branch
+      # - name: Checkout main branch
+      #   run: |
+      #     git fetch origin main
+      #     git checkout origin/main
+
+      # - name: Read version from main branch
+      #   id: main_version
+      #   run: |
+      #     MAIN_VERSION=$(jq -r '.version' package.json)
+      #     echo "Main branch version: $MAIN_VERSION"
+      #     echo "main_version=$MAIN_VERSION" >> $GITHUB_OUTPUT
+
+      - name: Read version from main branch
+        id: main_version
+        run: |
           git fetch origin main
-          MAIN_VERSION=$(git show origin/main:package.json | jq -r '.version')
+          git checkout origin/main
+          MAIN_VERSION=$(jq -r '.version' package.json)
           echo "Main branch version: $MAIN_VERSION"
+          echo "main_version=$MAIN_VERSION" >> $GITHUB_OUTPUT
 
-          # Compare versions
-          if [ "$PR_VERSION" == "$MAIN_VERSION" ]; then
-            echo "Version in package.json is the same as main branch: $PR_VERSION. Please update it for the new release."
+      - name: Compare versions
+        run: |
+          if [ "${{ steps.pr_version.outputs.pr_version }}" == "${{ steps.main_version.outputs.main_version }}" ]; then
+            echo "Version in package.json is the same as main branch: ${{ steps.pr_version.outputs.pr_version }}. Please update it for the new release."
             exit 1
           else
             echo "Version in package.json differs from main branch."
