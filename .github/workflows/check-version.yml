@@ -4,44 +4,60 @@ on:
   pull_request:
     branches:
       - main
+      - develop
 
 jobs:
   check-version:
     runs-on: ubuntu-latest
 
     steps:
-      # Step 1: Checkout the PR branch
-      - name: Checkout PR branch
-        uses: actions/checkout@v3
+      - name: Get the ref
+        id: get-ref
+        uses: ankitvgupta/ref-to-tag-action@master
+        with:
+          ref: ${{ github.ref }}
+          head_ref: ${{ github.head_ref }}
 
-      # Step 2: Read package.json from the PR branch
+      - name: Exit if not main
+        if: github.ref == 'refs/heads/main'
+        run: |
+          echo "Not main, exiting"
+          exit 0
+
+      - name: Checkout PR branch
+        uses: actions/checkout@v4
+
       - name: Read version from PR branch
         id: pr_version
         run: |
           PR_VERSION=$(jq -r '.version' package.json)
           echo "PR version: $PR_VERSION"
-          echo "pr_version=$PR_VERSION" >> $GITHUB_ENV
+          echo "pr_version=$PR_VERSION" >> $GITHUB_OUTPUT
 
-      # Step 3: Fetch and check out the main branch
-      - name: Checkout main branch
-        run: |
-          git fetch origin main
-          git checkout origin/main
-
-      # Step 4: Read package.json from the main branch
       - name: Read version from main branch
         id: main_version
         run: |
+          git fetch origin main
+          git checkout origin/main
           MAIN_VERSION=$(jq -r '.version' package.json)
           echo "Main branch version: $MAIN_VERSION"
-          echo "main_version=$MAIN_VERSION" >> $GITHUB_ENV
+          echo "main_version=$MAIN_VERSION" >> $GITHUB_OUTPUT
 
-      # Step 5: Compare versions
       - name: Compare versions
         run: |
+          PR_VERSION="${{ steps.pr_version.outputs.pr_version }}"
+          MAIN_VERSION="${{ steps.main_version.outputs.main_version }}"
+
+          # Check if versions are the same
           if [ "$PR_VERSION" == "$MAIN_VERSION" ]; then
-            echo "Version in package.json is the same as main branch: $PR_VERSION. Please update it for the new release."
+            echo "Version in package.json is the same as the main branch version: $MAIN_VERSION. Please update it for the new release."
             exit 1
-          else
-            echo "Version in package.json has already been updated."
           fi
+
+          # Compare versions using sort -V to ensure PR version is greater
+          if [ "$(printf '%s\n%s' "$MAIN_VERSION" "$PR_VERSION" | sort -V | head -n 1)" == "$PR_VERSION" ]; then
+            echo "Version in package.json ($PR_VERSION) is not greater than the main branch version ($MAIN_VERSION). Please increment the version for the new release."
+            exit 1
+          fi
+
+          echo "Version in package.json ($PR_VERSION) is greater than the main branch version ($MAIN_VERSION)."
